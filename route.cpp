@@ -17,8 +17,9 @@ using namespace std::literals;
 #include "bitmap.h"
 
 
-constexpr auto      infinity=std::numeric_limits<int>::max();
-constexpr Location  noRoute{infinity,infinity};
+constexpr auto      infinity=std::numeric_limits<double>::max();
+
+constexpr Location  noRoute{-1,-1};
 
 struct Element
 {
@@ -27,15 +28,15 @@ struct Element
 
 // routing
     bool        visited{false};    
-    int         distance{infinity};
+    double      distance{infinity};
     Location    previous{noRoute};
 };
 
 
 struct Fringe
 {
-    int         cost;
-    int         distance;
+    double      cost;
+    double      distance;
     Location    location;
     
     auto operator<(Fringe const &rhs) const noexcept 
@@ -111,19 +112,19 @@ auto getNeighboursDiagonal(Location here)
 }
 
 
-int dijkstraCost(Location location)
+double dijkstraCost(Location location)
 {
     return  element(location).distance;
 }
 
-int aStarCost(Location location)
+double aStarCost(Location location)
 {
     auto drow = finish.row    - location.row;
     auto dcol = finish.column - location.column;
 
     auto crow = sqrt(drow*drow+dcol*dcol);
 
-    return  element(location).distance + crow*.95;
+    return  element(location).distance + crow;
 }
 
 
@@ -153,23 +154,39 @@ void takeSomeSteps()
                 {
                     fringe.pop();
                 }
-                return;
+                return;                                     
             }
 
 
-            auto neighbours = getNeighbours(current.location);
-//            auto neighbours = getNeighboursDiagonal(current.location);
+//            auto neighbours = getNeighbours(current.location);
+            auto neighbours = getNeighboursDiagonal(current.location);
 
             for(auto neighbour : neighbours)
             {
-                auto const newDistance = current.distance + 1;
+                auto drow = neighbour.row-current.location.row;
+                auto dcol = neighbour.column- current.location.column;
+
+                double newDistance;
+                if(drow && dcol)
+                {
+                    newDistance = current.distance + sqrt(2.0);
+                }
+                else
+                {
+                    newDistance = current.distance + 1 ;
+                }
+    
 
                 if(newDistance < element(neighbour).distance)
                 {
                     element(neighbour).distance = newDistance;
                     element(neighbour).previous = current.location;
 
-
+/*
+                    fringe.push( Fringe{ dijkstraCost(neighbour), 
+                                         newDistance,
+                                         neighbour});
+*/
                     fringe.push( Fringe{ aStarCost(neighbour), 
                                          newDistance,
                                          neighbour});
@@ -193,7 +210,20 @@ void routeThread()
 
 void fillBitmapGrid()
 {
-    static int maxDistance = 2*dim;
+    double maxDistance = 1;
+
+    for(int row=0;row<dim;row++)
+    {
+        for(int column=0;column<dim;column++)
+        {
+            if(grid[row][column].distance != infinity)
+            {
+                maxDistance = std::max(maxDistance,grid[row][column].distance);
+            }
+        }
+    }                                                                       
+
+
 
     for(int row=0;row<dim;row++)
     {
@@ -260,9 +290,20 @@ void fillBitmap()
 }
 
 
+void addObstacle(int top, int left, int bottom, int right)
+{
+    for(int row=top;row<bottom;row++)
+    {
+        for(int column=left;column<right;column++)
+        {
+            grid[row][column].blocked=true;
+        }
+    }
+}
 
 
-void addObstacle()
+
+void addRandomObstacle()
 {
     static std::mt19937                         rng{std::random_device{}()};
     static std::uniform_int_distribution        loc{0,dim-20};
@@ -286,25 +327,52 @@ void addObstacle()
         return;
     }
 
-    for(int row=top;row<top+20;row++)
+    addObstacle(top,left,top+20,left+20);
+
+}
+
+
+void addRandomObstacles()
+{
+    for(int i=0;i<1500;i++)
     {
-        for(int column=left;column<left+20;column++)
-        {
-            grid[row][column].blocked=true;
-        }
+        addRandomObstacle();
     }
 }
+
+
+
+void addGates()
+{
+    addObstacle(  0, 50, 
+                900, 60);
+
+    addObstacle( 100, 500, 
+                1000, 510);
+
+}
+
+
+void addTrap()
+{
+    addObstacle( 10, 800, 
+                900, 810);
+
+    addObstacle(800 , 10, 
+                810, 900);
+
+}
+
 
 
 void startRouting()
 {
     std::unique_lock    _{gridLock};
 
-    for(int i=0;i<1500;i++)
-    {
-        addObstacle();
-    }
+//    addRandomObstacles();
+//    addGates();
 
+    addTrap();
 
     element(start).distance=0;
     fringe.push( Fringe{0, 0,start});
