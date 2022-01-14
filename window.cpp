@@ -1,3 +1,5 @@
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #include <cassert>
@@ -23,6 +25,7 @@ void drawThread()
 {
     for(;;)
     {
+        fillBitmap();
         PostMessage(theWindow,WM_REFRESH,0,0);
         std::this_thread::sleep_for(10ms);
     }

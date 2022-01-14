@@ -362,6 +362,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bitmap.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="route.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>

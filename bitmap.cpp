@@ -1,4 +1,7 @@
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+
 #include <cstddef>
 #include "bitmap.h"
 
@@ -21,7 +24,7 @@ auto makeHeader()
     header->bmiHeader.biClrUsed         = 0;
     header->bmiHeader.biClrImportant    = 0;
 
-    for(int i=0;i<250;i++)
+    for(int i=0;i<=maxDistance;i++)
     {
         header->bmiColors[i]= RGBQUAD(i,i,i);
     }
@@ -29,6 +32,7 @@ auto makeHeader()
     header->bmiColors[Colour::background] = RGBQUAD( 40, 20, 20);
     header->bmiColors[Colour::startStop]  = RGBQUAD(  0,200,  0);
     header->bmiColors[Colour::route]      = RGBQUAD(200,  0,200);
+    header->bmiColors[Colour::blocked]    = RGBQUAD( 50, 50,100);
 
     return header;
 }
