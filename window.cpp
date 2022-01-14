@@ -18,7 +18,7 @@ namespace
 HWND                theWindow   {};
 constexpr int       WM_REFRESH  {WM_APP};
 constexpr auto      windowStyle { WS_OVERLAPPED     | WS_CAPTION        | WS_SYSMENU      };
-constexpr int       scale       {4};
+constexpr int       scale       {1};
 
 
 void drawThread()

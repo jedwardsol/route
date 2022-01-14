@@ -2,7 +2,7 @@
 
 #include <compare>
 
-constexpr   int     dim   = 256;
+constexpr   int     dim   = 1000;
 
 struct Location
 {

@@ -123,7 +123,7 @@ int aStarCost(Location location)
 
     auto crow = sqrt(drow*drow+dcol*dcol);
 
-    return  element(location).distance + crow;;
+    return  element(location).distance + crow*.95;
 }
 
 
@@ -133,7 +133,7 @@ void takeSomeSteps()
 
     std::unique_lock    _{gridLock};
 
-    for(int i=0;i<1000;i++)
+    for(int i=0;i<10000;i++)
     {
         if(!fringe.empty())
         {
@@ -157,8 +157,8 @@ void takeSomeSteps()
             }
 
 
-//          auto neighbours = getNeighbours(current.location);
-            auto neighbours = getNeighboursDiagonal(current.location);
+            auto neighbours = getNeighbours(current.location);
+//            auto neighbours = getNeighboursDiagonal(current.location);
 
             for(auto neighbour : neighbours)
             {
@@ -178,7 +178,6 @@ void takeSomeSteps()
             }
         }
     }
-
 }
 
 
@@ -262,16 +261,48 @@ void fillBitmap()
 
 
 
+
+void addObstacle()
+{
+    static std::mt19937                         rng{std::random_device{}()};
+    static std::uniform_int_distribution        loc{0,dim-20};
+
+    auto top =loc(rng);
+    auto left=loc(rng);
+
+    if(    top  < start.row
+       &&  top  > start.row - 20
+       &&  left < start.column
+       &&  left > start.column-20)
+    {
+        return;
+    }
+
+    if(    top  < finish.row
+       &&  top  > finish.row - 20
+       &&  left < finish.column
+       &&  left > finish.column-20)
+    {
+        return;
+    }
+
+    for(int row=top;row<top+20;row++)
+    {
+        for(int column=left;column<left+20;column++)
+        {
+            grid[row][column].blocked=true;
+        }
+    }
+}
+
+
 void startRouting()
 {
     std::unique_lock    _{gridLock};
 
-    for(int row=dim/2-10;row<dim/2+10;row++)
+    for(int i=0;i<800;i++)
     {
-        for(int column=dim/2-10;column<dim/2+10;column++)
-        {
-            grid[row][column].blocked=true;
-        }
+        addObstacle();
     }
 
 
