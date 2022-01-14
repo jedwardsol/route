@@ -300,7 +300,7 @@ void startRouting()
 {
     std::unique_lock    _{gridLock};
 
-    for(int i=0;i<800;i++)
+    for(int i=0;i<1500;i++)
     {
         addObstacle();
     }

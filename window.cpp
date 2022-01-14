@@ -11,19 +11,19 @@ using namespace std::literals;
 #include "print.h"
 #include "bitmap.h"
 #include "window.h"
-
+#include "route.h"
 
 namespace
 {
 HWND                theWindow   {};
 constexpr int       WM_REFRESH  {WM_APP};
-constexpr auto      windowStyle { WS_OVERLAPPED     | WS_CAPTION        | WS_SYSMENU      };
+constexpr auto      windowStyle { WS_OVERLAPPED | WS_CAPTION  | WS_SYSMENU  | WS_VISIBLE    };
 constexpr int       scale       {1};
 
 
 void drawThread()
 {
-    for(;;)
+    while(!done)
     {
         fillBitmap();
         PostMessage(theWindow,WM_REFRESH,0,0);
@@ -66,11 +66,11 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
         assert(client.right  - client.left == dim*scale);
         assert(client.bottom - client.top  == dim*scale);
 
-        ShowWindow(h,SW_SHOW);
         return 0;
     }
 
     case WM_CLOSE:
+        done=true;
         PostQuitMessage(0);
         return 0;
 
@@ -122,7 +122,7 @@ void createWindow()
     }
 
     theWindow = CreateWindow(Class.lpszClassName,
-                             "bitmap",
+                             "route",
                              windowStyle,
                              CW_USEDEFAULT,CW_USEDEFAULT,
                              10,10,

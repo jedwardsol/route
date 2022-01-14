@@ -8,6 +8,9 @@
 #include "route.h"
 #include "window.h"
 
+std::atomic_bool  done{false};
+
+
 
 int main()
 try
