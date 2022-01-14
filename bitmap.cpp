@@ -28,11 +28,11 @@ auto makeHeader()
     {
         header->bmiColors[i]= RGBQUAD(i,i,i);
     }
-                                                  //  B    G  R
-    header->bmiColors[Colour::background] = RGBQUAD( 40, 20, 20);
-    header->bmiColors[Colour::startStop]  = RGBQUAD(  0,200,  0);
-    header->bmiColors[Colour::route]      = RGBQUAD(200,  0,200);
-    header->bmiColors[Colour::blocked]    = RGBQUAD( 50, 50,100);
+                                                  //  B    G    R
+    header->bmiColors[Colour::background] = RGBQUAD( 40,  20,  20);
+    header->bmiColors[Colour::startStop]  = RGBQUAD(  0, 200,   0);
+    header->bmiColors[Colour::route]      = RGBQUAD( 20,  20, 200);
+    header->bmiColors[Colour::blocked]    = RGBQUAD( 50,  50, 100);
 
     return header;
 }
