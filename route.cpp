@@ -4,18 +4,35 @@
 #include "print.h"
 
 
+HBITMAP field;
+
 LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 {
     switch(m)
     {
-    case WM_CREATE:
+            
+    
+
+    case WM_PAINT:
     {
-        RECT r;
-        GetClientRect(h,&r);
+        PAINTSTRUCT ps{};
+        auto dc = BeginPaint(h, &ps);
 
-        print("{},{} - {},{}\n",r.left,r.top, r.right,r.bottom);
+        auto cdc       = CreateCompatibleDC(dc);
+        auto oldBitmap = SelectObject(cdc, field);
 
-        ShowWindow(h,SW_SHOW);
+        BITMAP bitmap;
+
+        GetObject(field, sizeof(bitmap), &bitmap);
+
+        BitBlt(dc,  0, 0, bitmap.bmWidth, bitmap.bmHeight, 
+               cdc, 0, 0, SRCCOPY);
+
+
+        SelectObject(cdc, oldBitmap);
+        DeleteDC(cdc);
+
+        EndPaint(h, &ps);
         return 0;
     }
 
@@ -27,6 +44,9 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 
 int main()
 {
+    field = CreateBitmap(1000,1000,
+
+
     WNDCLASSA   wndClass{};
 
     wndClass.lpfnWndProc   = proc;
@@ -42,7 +62,7 @@ int main()
 
     CreateWindowA(wndClass.lpszClassName,
                   "route",
-                  WS_OVERLAPPEDWINDOW,
+                  WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                   CW_USEDEFAULT,CW_USEDEFAULT,
                   client.right-client.left,client.bottom-client.top,
                   nullptr,
