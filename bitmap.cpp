@@ -4,6 +4,8 @@
 
 #include <cstddef>
 #include "bitmap.h"
+#include <utility>
+#include <mutex>
 
 namespace
 {
@@ -43,3 +45,88 @@ auto makeHeader()
 BITMAPINFO     *bitmapHeader        {makeHeader()};
 uint8_t         bitmapData[dim][dim]{};
 //                               ^---- must be multiple of 4
+
+
+
+void fillBitmapGrid()
+{
+    double maxDistance = 1;
+
+    for(int row=0;row<dim;row++)
+    {
+        for(int column=0;column<dim;column++)
+        {
+            if(grid[row][column].distance != infinity)
+            {
+                maxDistance = std::max(maxDistance,grid[row][column].distance);
+            }
+        }
+    }                                                                       
+
+
+
+    for(int row=0;row<dim;row++)
+    {
+        for(int column=0;column<dim;column++)
+        {
+            if(grid[row][column].blocked)
+            {
+                bitmapData[row][column]=Colour::blocked;
+            }
+            else
+            {
+                if(grid[row][column].distance == infinity)
+                {
+                    bitmapData[row][column] = Colour::background;
+                }
+                else
+                {
+                    bitmapData[row][column] = grid[row][column].distance * 250 / maxDistance;
+                }
+            }
+        }
+    }                                                                       
+}
+
+void fillBitmapRoute(Location  walk)
+{
+    
+    do
+    {
+        bitmapData[walk.row][walk.column]=Colour::route;
+
+        walk = element(walk).previous;
+
+    }while(walk !=noRoute);
+}
+
+
+void fillBitmap()
+{
+    std::unique_lock    _{gridLock};
+
+    fillBitmapGrid();
+
+
+// route
+
+    if(element(finish).distance != infinity)
+    {
+        // final route
+        fillBitmapRoute(finish);
+    }
+    else if(!fringe.empty())
+    {
+        // best route so far
+        fillBitmapRoute(fringe.top().location);
+    }
+    else
+    {
+        // no route
+    }
+
+    bitmapData[start.row][start.column]  =Colour::startStop;
+    bitmapData[finish.row][finish.column]=Colour::startStop;
+}
+
+

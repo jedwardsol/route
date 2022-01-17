@@ -2,6 +2,8 @@
 
 #include <compare>
 #include <atomic>
+#include <mutex>
+#include <queue>
 
 constexpr auto      infinity=std::numeric_limits<double>::max();
 
@@ -40,5 +42,27 @@ struct Element
 };
 
 
+struct Fringe
+{
+    double      cost;
+    double      distance;
+    Location    location;
+    
+    auto operator<(Fringe const &rhs) const noexcept 
+    {
+        return rhs.cost < cost;
+    }
+
+};
+
+
+extern std::mutex                  gridLock;
 extern Element                     grid[dim][dim];
+extern std::priority_queue<Fringe> fringe;
+
+inline auto &element(Location location)
+{
+    return grid[location.row][location.column];
+}
+
 
