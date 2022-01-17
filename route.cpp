@@ -17,21 +17,6 @@ using namespace std::literals;
 #include "bitmap.h"
 
 
-constexpr auto      infinity=std::numeric_limits<double>::max();
-
-constexpr Location  noRoute{-1,-1};
-
-struct Element
-{
-// contents
-    bool        blocked{};
-
-// routing
-    bool        visited{false};    
-    double      distance{infinity};
-    Location    previous{noRoute};
-};
-
 
 struct Fringe
 {
@@ -182,15 +167,15 @@ void takeSomeSteps()
                     element(neighbour).distance = newDistance;
                     element(neighbour).previous = current.location;
 
-/*
+
                     fringe.push( Fringe{ dijkstraCost(neighbour), 
                                          newDistance,
                                          neighbour});
-*/
+/*
                     fringe.push( Fringe{ aStarCost(neighbour), 
                                          newDistance,
                                          neighbour});
-
+*/
                 }
             }
         }
@@ -250,14 +235,14 @@ void fillBitmapGrid()
 
 void fillBitmapRoute(Location  walk)
 {
-    bitmapData[walk.row][walk.column]=Colour::route;
-
-    auto previous = element(walk).previous;
-
-    if(previous!=noRoute)
+    
+    do
     {
-        fillBitmapRoute(previous);
-    }
+        bitmapData[walk.row][walk.column]=Colour::route;
+
+        walk = element(walk).previous;
+
+    }while(walk !=noRoute);
 }
 
 
@@ -290,89 +275,14 @@ void fillBitmap()
 }
 
 
-void addObstacle(int top, int left, int bottom, int right)
-{
-    for(int row=top;row<bottom;row++)
-    {
-        for(int column=left;column<right;column++)
-        {
-            grid[row][column].blocked=true;
-        }
-    }
-}
-
-
-
-void addRandomObstacle()
-{
-    static std::mt19937                         rng{std::random_device{}()};
-    static std::uniform_int_distribution        loc{0,dim-20};
-
-    auto top =loc(rng);
-    auto left=loc(rng);
-
-    if(    top  < start.row
-       &&  top  > start.row - 20
-       &&  left < start.column
-       &&  left > start.column-20)
-    {
-        return;
-    }
-
-    if(    top  < finish.row
-       &&  top  > finish.row - 20
-       &&  left < finish.column
-       &&  left > finish.column-20)
-    {
-        return;
-    }
-
-    addObstacle(top,left,top+20,left+20);
-
-}
-
-
-void addRandomObstacles()
-{
-    for(int i=0;i<1500;i++)
-    {
-        addRandomObstacle();
-    }
-}
-
-
-
-void addGates()
-{
-    addObstacle(  0, 50, 
-                900, 60);
-
-    addObstacle( 100, 500, 
-                1000, 510);
-
-}
-
-
-void addTrap()
-{
-    addObstacle( 10, 800, 
-                900, 810);
-
-    addObstacle(800 , 10, 
-                810, 900);
-
-}
-
 
 
 void startRouting()
 {
     std::unique_lock    _{gridLock};
 
-//    addRandomObstacles();
-//    addGates();
+    initGrid();
 
-    addTrap();
 
     element(start).distance=0;
     fringe.push( Fringe{0, 0,start});
@@ -380,4 +290,7 @@ void startRouting()
     std::thread{routeThread}.detach();
 }
 
-
+void endRouting()
+{
+    std::unique_lock    _{gridLock};
+}

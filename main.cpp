@@ -20,6 +20,8 @@ try
     startRouting();
 
     windowMessageLoop();
+
+    endRouting();
 }
 catch(const std::exception &e)
 {

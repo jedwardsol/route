@@ -17,7 +17,9 @@ namespace
 {
 HWND                theWindow   {};
 constexpr int       WM_REFRESH  {WM_APP};
-constexpr auto      windowStyle { WS_OVERLAPPED | WS_CAPTION  | WS_SYSMENU  | WS_VISIBLE    };
+//constexpr auto      windowStyle { WS_OVERLAPPED | WS_CAPTION  | WS_SYSMENU  | WS_VISIBLE    };
+constexpr auto      windowStyle { WS_OVERLAPPEDWINDOW | WS_VISIBLE    };
+
 constexpr int       scale       {1};
 
 
@@ -37,10 +39,14 @@ void paint(HWND h,WPARAM w, LPARAM l)
 {
     PAINTSTRUCT paint;
     BeginPaint(h,&paint);
+
+    RECT  r{};
+    GetClientRect(h,&r);
     
     StretchDIBits(paint.hdc,
                   0,0,
-                  dim*scale,dim*scale,
+                  r.right-r.left,
+                  r.bottom-r.top,
                   0,0,
                   dim,dim,
                   bitmapData,
@@ -82,7 +88,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
         InvalidateRect(h,nullptr,FALSE);
         return 0;
     
-    case WM_NCHITTEST:
+//    case WM_NCHITTEST:
     case WM_MOUSEMOVE:
     case WM_NCMOUSEMOVE:
     case WM_SETCURSOR:
